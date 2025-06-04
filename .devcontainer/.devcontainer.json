@@ -1,0 +1,46 @@
+{
+    "name": "Azure Developer CLI",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bullseye",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "18",
+            "nodeGypDependencies": false
+        },
+        "ghcr.io/azure/azure-dev/azd:latest": {},
+        "ghcr.io/devcontainers/features/powershell:latest": {},
+        "ghcr.io/devcontainers/features/azure-cli:latest": {},
+        "ghcr.io/devcontainers/features/python:1": { "installPackages": ["python3-pip"] },
+        "ghcr.io/devcontainers/features/dotnet:latest": {
+            "version": "8.0"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "GitHub.vscode-github-actions",
+                "ms-azuretools.azure-dev",
+                "ms-azuretools.vscode-azurefunctions",
+                "ms-azuretools.vscode-bicep",
+                "ms-azuretools.vscode-docker",
+                "ms-vscode.js-debug",
+                "ms-vscode.vscode-node-azure-pack",
+                "ms-vscode.powershell",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-dotnettools.csdevkit"
+            ]
+        }
+    },
+    "forwardPorts": [
+        3000,
+        3100
+    ],
+    "postCreateCommand": "", // Install Azure Functions Core Tools
+    "hostRequirements": {
+        "memory": "8gb"
+    }
+}
