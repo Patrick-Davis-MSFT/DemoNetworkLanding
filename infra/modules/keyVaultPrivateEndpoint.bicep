@@ -23,7 +23,7 @@ param keyVaultId string
 @description('Resource ID of the subnet for private endpoint deployment')
 param subnetId string
 
-@description('Resource ID of the private DNS zone for vault.azure.net')
+@description('Resource ID of the private DNS zone')
 param privateDnsZoneId string
 
 @description('Tags to apply to the private endpoint')
