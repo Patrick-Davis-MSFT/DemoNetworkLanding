@@ -33,6 +33,10 @@ param appSnetDef array
 param gatewaySubnet object
 param bastionSubnet object
 
+param keyVaultName string
+param keyVaultSkuName string = 'standard'
+param enableKeyVault bool = true
+
 param resourceGroupName string
 param location string
 var tags = { License: 'MIT' }
@@ -97,9 +101,12 @@ module hubGatewaySubnet './modules/gatewaySubnet.bicep' = {
   }
 }
 
-module hubBastionSubnet './modules/bastionSubnet.bicep' = {
+module hubBastionSubnet './modules/bastion.bicep' = {
   name: 'hubBastionSubnet'
   scope: rg
+  dependsOn: [
+    hubGatewaySubnet
+  ]
   params: {
     vnetName: hubVnet.outputs.vnetName
     bastionSubnet: bastionSubnet
@@ -157,3 +164,38 @@ module privateDnsZones './modules/privateDNS.bicep' = [for dnsZoneName in dnsNam
     tags: tags
   }
 }]
+
+// =====================================================================
+// Key Vault with Private Endpoint Integration
+// =====================================================================
+
+module keyVault './modules/keyVault.bicep' = if (enableKeyVault) {
+  name: 'keyVault'
+  scope: rg
+  params: {
+    keyVaultName: '${keyVaultName}-${resourceToken}'
+    location: location
+    tenantId: tenant().tenantId
+    skuName: keyVaultSkuName
+    tags: tags
+  }
+  dependsOn: [
+    hubVnet
+  ]
+}
+
+module keyVaultPrivateEndpoint './modules/keyVaultPrivateEndpoint.bicep' = if (enableKeyVault) {
+  name: 'keyVaultPrivateEndpoint'
+  scope: rg
+  params: {
+    privateEndpointName: '${keyVaultName}-pe-${resourceToken}'
+    location: location
+    keyVaultId: keyVault.outputs.keyVaultId
+    subnetId: '${hubVnet.outputs.vnetId}/subnets/${hubSubnetDef[0].name}'
+    privateDnsZoneId: privateDnsZones[0].outputs.privateDnsZoneId
+    tags: tags
+  }
+  dependsOn: [
+    privateDnsZones
+  ]
+}

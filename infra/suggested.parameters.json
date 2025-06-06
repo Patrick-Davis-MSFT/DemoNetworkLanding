@@ -17,6 +17,15 @@
     "nsgHubName": {
       "value": "nsg-hub"
     },
+    "keyVaultName": {
+      "value": "kv-netw"
+    },
+    "keyVaultSkuName": {
+      "value": "standard"
+    },
+    "enableKeyVault": {
+      "value": true
+    },
     "bastionSubnet": {
       "value": {
         "name": "AzureBastionSubnet",
@@ -32,7 +41,7 @@
     "hubSubnetDef": {
       "value": [
         {
-          "name": "snet-01",
+          "name": "pe-subnet-01",
           "addressPrefix": "10.0.1.0/24",
           "nsgName": "nsg-hub"
         },
