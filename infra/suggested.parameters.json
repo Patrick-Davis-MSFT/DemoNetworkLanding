@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "resourceGroupName": {
+      "value": "rg-demo-network-landing"
+    },
     "location": {
       "value": "eastus2"
     },
@@ -14,13 +17,20 @@
     "nsgHubName": {
       "value": "nsg-hub"
     },
+    "bastionSubnet": {
+      "value": {
+        "name": "AzureBastionSubnet",
+        "addressPrefix": "10.0.7.0/26"
+      }
+    },
+    "gatewaySubnet": {
+      "value": {
+        "name": "GatewaySubnet",
+        "addressPrefix": "10.0.0.0/24"
+      }
+    },
     "hubSubnetDef": {
       "value": [
-        {
-          "name": "GatewaySubnet",
-          "addressPrefix": "10.0.0.0/24",
-          "nsgName": "nsg-hub"
-        },
         {
           "name": "snet-01",
           "addressPrefix": "10.0.1.0/24",
@@ -49,11 +59,6 @@
         {
           "name": "snet-06",
           "addressPrefix": "10.0.6.0/24",
-          "nsgName": "nsg-hub"
-        },
-        {
-          "name": "AzureBastionSubnet",
-          "addressPrefix": "10.0.7.0/26",
           "nsgName": "nsg-hub"
         }
       ]
@@ -86,7 +91,7 @@
         },
         {
           "name": "app-subnet",
-          "addressPrefix": "10.0.3.0/24",
+          "addressPrefix": "10.0.11.0/24",
           "nsgName": "nsg-hub",
           "delegations": [
             {
@@ -112,7 +117,7 @@
       "value": [
         {
           "name": "default",
-          "addressPrefix": "10.16.0/24",
+          "addressPrefix": "10.0.16.0/24",
           "nsgName": "nsg-demo-apps"
         },
         {

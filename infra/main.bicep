@@ -30,7 +30,10 @@ param appVnetAddress string
 param appNSGName string
 param appSnetDef array
 
-param  resourceGroupName string
+param gatewaySubnet object
+param bastionSubnet object
+
+param resourceGroupName string
 param location string
 var tags = { License: 'MIT' }
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, location))
@@ -82,6 +85,24 @@ module hubVnet './modules/vnet.bicep' = {
     nsgId: nsgHub.outputs.nsgId
     location: location
     tags: tags
+  }
+}
+
+module hubGatewaySubnet './modules/gatewaySubnet.bicep' = {
+  name: 'hubGatewaySubnet'
+  scope: rg
+  params: {
+    vnetName: hubVnet.outputs.vnetName
+    gatewaySubnet: gatewaySubnet
+  }
+}
+
+module hubBastionSubnet './modules/bastionSubnet.bicep' = {
+  name: 'hubBastionSubnet'
+  scope: rg
+  params: {
+    vnetName: hubVnet.outputs.vnetName
+    bastionSubnet: bastionSubnet
   }
 }
 
