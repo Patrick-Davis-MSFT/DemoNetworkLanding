@@ -1,0 +1,153 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceGroupName": {
+      "value": "rg-demo-network-landing"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "hubVnetName": {
+      "value": "vnet-hub-01"
+    },
+    "hubVnetAddress": {
+      "value": "10.0.0.0/21"
+    },
+    "nsgHubName": {
+      "value": "nsg-hub"
+    },
+    "keyVaultName": {
+      "value": "kv-netw"
+    },
+    "keyVaultSkuName": {
+      "value": "standard"
+    },
+    "enableKeyVault": {
+      "value": true
+    },
+    "bastionSubnet": {
+      "value": {
+        "name": "AzureBastionSubnet",
+        "addressPrefix": "10.0.7.0/26"
+      }
+    },
+    "gatewaySubnet": {
+      "value": {
+        "name": "GatewaySubnet",
+        "addressPrefix": "10.0.0.0/24"
+      }
+    },
+    "hubSubnetDef": {
+      "value": [
+        {
+          "name": "pe-subnet-01",
+          "addressPrefix": "10.0.1.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-02",
+          "addressPrefix": "10.0.2.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-03",
+          "addressPrefix": "10.0.3.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-04",
+          "addressPrefix": "10.0.4.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-05",
+          "addressPrefix": "10.0.5.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-06",
+          "addressPrefix": "10.0.6.0/24",
+          "nsgName": "nsg-hub"
+        }
+      ]
+    },
+    "permServVnetName": {
+      "value": "vnet-ai-spoke"
+    },
+    "permServVnetAddress": {
+      "value": "10.0.8.0/21"
+    },
+    "permServNSGName": {
+      "value": "nsg-ai"
+    },
+    "permServSnetDef": {
+      "value": [
+        {
+          "name": "default-08",
+          "addressPrefix": "10.0.8.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-09",
+          "addressPrefix": "10.0.9.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "snet-10",
+          "addressPrefix": "10.0.10.0/24",
+          "nsgName": "nsg-hub"
+        },
+        {
+          "name": "app-subnet",
+          "addressPrefix": "10.0.11.0/24",
+          "nsgName": "nsg-hub",
+          "delegations": [
+            {
+              "name": "appServiceDelegation",
+              "properties": {
+                "serviceName": "Microsoft.Web/serverFarms"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "appVnetName": {
+      "value": "vnet-demo-apps"
+    },
+    "appVnetAddress": {
+      "value": "10.0.16.0/20"
+    },
+    "appNSGName": {
+      "value": "nsg-demo-apps"
+    },
+    "appSnetDef": {
+      "value": [
+        {
+          "name": "default",
+          "addressPrefix": "10.0.16.0/24",
+          "nsgName": "nsg-demo-apps"
+        },
+        {
+          "name": "snet-pe-17",
+          "addressPrefix": "10.0.17.0/24",
+          "nsgName": "nsg-demo-apps"
+        },
+        {
+          "name": "snet-app-del-18",
+          "addressPrefix": "10.0.18.0/24",
+          "nsgName": "nsg-demo-apps",
+          "delegations": [
+            {
+              "name": "appServiceDelegation",
+              "properties": {
+                "serviceName": "Microsoft.Web/serverFarms"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
