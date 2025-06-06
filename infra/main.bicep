@@ -40,7 +40,7 @@ param enableKeyVault bool = true
 param resourceGroupName string
 param location string
 var tags = { License: 'MIT' }
-var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, location))
+var resourceToken = toLower(substring(uniqueString(subscription().id, resourceGroupName, location), 0, 5))
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
