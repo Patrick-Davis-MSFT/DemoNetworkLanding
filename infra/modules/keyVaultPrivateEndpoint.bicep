@@ -89,8 +89,3 @@ output privateEndpointId string = privateEndpoint.id
 @description('Name of the private endpoint')
 output privateEndpointName string = privateEndpoint.name
 
-@description('Private IP address of the Key Vault private endpoint')
-output privateIpAddress string = privateEndpoint.properties.customDnsConfigs[0].ipAddresses[0]
-
-@description('Network interface ID of the private endpoint')
-output networkInterfaceId string = privateEndpoint.properties.networkInterfaces[0].id
