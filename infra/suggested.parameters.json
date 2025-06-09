@@ -22,9 +22,19 @@
     },
     "keyVaultSkuName": {
       "value": "standard"
-    },
-    "enableKeyVault": {
+    },    "enableKeyVault": {
       "value": true
+    },
+    "vmAdminUsername": {
+      "value": "openseasmeuser"
+    },
+    "vmAdminPassword": {
+      "value": "Ch@nG3M3R!gh7@w@yN0w!"
+    },    "vmSize": {
+      "value": "Standard_B2s"
+    },
+    "windowsOSVersion": {
+      "value": "2022-datacenter-g2"
     },
     "bastionSubnet": {
       "value": {

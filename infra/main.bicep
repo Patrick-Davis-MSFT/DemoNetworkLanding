@@ -37,6 +37,13 @@ param keyVaultName string
 param keyVaultSkuName string = 'standard'
 param enableKeyVault bool = true
 
+// VM Configuration Parameters
+param vmAdminUsername string = 'openseasmeuser'
+@secure()
+param vmAdminPassword string
+param vmSize string = 'Standard_DS1_v2'
+param windowsOSVersion string = '2022-datacenter-g2'
+
 param resourceGroupName string
 param location string
 var tags = { License: 'MIT' }
@@ -101,7 +108,7 @@ module hubGatewaySubnet './modules/gatewaySubnet.bicep' = {
   }
 }
 
-module hubBastionSubnet './modules/bastion.bicep' = {
+module hubBastionSubnet './modules/bastion.bicep' = if (enableKeyVault) {
   name: 'hubBastionSubnet'
   scope: rg
   dependsOn: [
@@ -110,6 +117,15 @@ module hubBastionSubnet './modules/bastion.bicep' = {
   params: {
     vnetName: hubVnet.outputs.vnetName
     bastionSubnet: bastionSubnet
+    vmSubnetId: '${hubVnet.outputs.vnetId}/subnets/${hubSubnetDef[1].name}' // snet-02 for VM
+    location: location
+    resourceToken: resourceToken
+    tags: tags
+    vmAdminUsername: vmAdminUsername
+    vmAdminPassword: vmAdminPassword
+    vmSize: vmSize
+    keyVaultId: keyVault.outputs.keyVaultId
+    windowsOSVersion: windowsOSVersion
   }
 }
 
