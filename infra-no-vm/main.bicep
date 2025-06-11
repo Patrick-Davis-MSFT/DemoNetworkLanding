@@ -12,6 +12,7 @@ param dnsNameList array = [
   'privatelink.mongocluster.cosmos.azure.com'
   'privatelink.redis.cache.windows.net'
   'privatelink.services.ai.azure.com'
+  'privatelink.search.windows.net'
 
 ]
 
