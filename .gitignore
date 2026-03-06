@@ -1,0 +1,11 @@
+# Certificate artifacts generated for point-to-site VPN testing
+certs/
+*.cer
+*.crt
+*.pem
+*.pfx
+*.p12
+*.pvk
+*.key
+*.b64
+*.base64.txt
