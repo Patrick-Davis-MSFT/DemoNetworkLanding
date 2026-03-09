@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceGroupName": {
-      "value": "rg-demo-network-landing"
+      "value": "rg-perm-network"
     },
     "location": {
-      "value": "eastus2"
+      "value": "eastus"
     },
     "hubVnetName": {
       "value": "vnet-hub-01"
@@ -51,7 +51,7 @@
     "hubSubnetDef": {
       "value": [
         {
-          "name": "pe-subnet-01",
+          "name": "snet-01",
           "addressPrefix": "10.0.1.0/24",
           "nsgName": "nsg-hub"
         },
@@ -96,27 +96,35 @@
         {
           "name": "default-08",
           "addressPrefix": "10.0.8.0/24",
-          "nsgName": "nsg-hub"
-        },
-        {
-          "name": "snet-09",
-          "addressPrefix": "10.0.9.0/24",
-          "nsgName": "nsg-hub"
-        },
-        {
-          "name": "snet-10",
-          "addressPrefix": "10.0.10.0/24",
-          "nsgName": "nsg-hub"
+          "nsgName": "nsg-ai"
         },
         {
           "name": "app-subnet",
           "addressPrefix": "10.0.11.0/24",
-          "nsgName": "nsg-hub",
+          "nsgName": "vnet-ai-spoke-app-subnet-nsg-eastus2",
           "delegations": [
             {
-              "name": "appServiceDelegation",
+              "name": "delegation",
               "properties": {
-                "serviceName": "Microsoft.Web/serverFarms"
+                "serviceName": "Microsoft.Web/serverfarms"
+              }
+            }
+          ]
+        },
+        {
+          "name": "snet-10",
+          "addressPrefix": "10.0.10.0/24",
+          "nsgName": "vnet-ai-spoke-snet-10-nsg-eastus2"
+        },
+        {
+          "name": "snet-09-agent",
+          "addressPrefix": "10.0.9.0/24",
+          "nsgName": "vnet-ai-spoke-snet-09-agent-nsg-eastus2",
+          "delegations": [
+            {
+              "name": "delegation",
+              "properties": {
+                "serviceName": "Microsoft.App/environments"
               }
             }
           ]
@@ -153,6 +161,24 @@
               "name": "appServiceDelegation",
               "properties": {
                 "serviceName": "Microsoft.Web/serverFarms"
+              }
+            }
+          ]
+        },
+        {
+          "name": "snet-db-del-19",
+          "addressPrefix": "10.0.19.0/24",
+          "nsgName": "nsg-demo-apps"
+        },
+        {
+          "name": "snet-funct-app",
+          "addressPrefix": "10.0.20.0/24",
+          "nsgName": "nsg-demo-apps",
+          "delegations": [
+            {
+              "name": "delegation",
+              "properties": {
+                "serviceName": "Microsoft.App/environments"
               }
             }
           ]

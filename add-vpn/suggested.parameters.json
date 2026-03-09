@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hubVnetName": {
+      "value": "vnet-hub-01"
+    },
+    "vpnGatewayName": {
+      "value": "vng-p2s"
+    },
+    "vpnPublicIpName": {
+      "value": "pip-vng-p2s"
+    },
+    "vpnGatewaySku": {
+      "value": "VpnGw1"
+    },
+    "vpnClientAddressPoolPrefix": {
+      "value": "172.20.0.0/24"
+    },
+    "aadIssuer": {
+      "value": "https://sts.windows.net/<tenant-id>/"
+    }
+  }
+}

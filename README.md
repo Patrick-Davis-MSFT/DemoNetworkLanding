@@ -103,6 +103,39 @@ az deployment sub show --name "demo-network-landing-YYYYMMDD-HHMMSS" --query "pr
 az deployment sub list --query "[].{Name:name, State:properties.provisioningState, Timestamp:properties.timestamp}" --output table
 ```
 
+### 7. Optional: Add Point-to-Site VPN (Entra ID + Azure VPN Client)
+
+After the core network deployment finishes, you can optionally deploy the P2S VPN add-on:
+
+```bash
+# From repository root
+chmod +x ./add-vpn/deploy-p2s-vpn.sh
+./add-vpn/deploy-p2s-vpn.sh <resource-group-name> [location]
+```
+
+Example:
+
+```bash
+./add-vpn/deploy-p2s-vpn.sh rg-demo-network-landing eastus2
+```
+
+This optional step deploys:
+
+- Azure VPN Gateway in the existing hub `GatewaySubnet`
+- Entra ID authenticated P2S OpenVPN configuration
+- Peering updates so spoke VNets can use the hub gateway
+
+Then generate and import the Azure VPN Client profile:
+
+```bash
+az network vnet-gateway vpn-client generate \
+  --resource-group <resource-group-name> \
+  --name <vpn-gateway-name> \
+  --processor-architecture Amd64
+```
+
+For full client setup steps, see `add-vpn/README.md`.
+
 ## Configuration Parameters
 
 The `suggested.parameters.json` file contains the following key configurations:

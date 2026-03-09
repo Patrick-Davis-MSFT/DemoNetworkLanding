@@ -1,0 +1,173 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "10877385399578834583"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Deployment location. Defaults to resource group location."
+      }
+    },
+    "hubVnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub VNet name created by infra-no-vm deployment."
+      }
+    },
+    "gatewaySubnetName": {
+      "type": "string",
+      "defaultValue": "GatewaySubnet",
+      "metadata": {
+        "description": "Gateway subnet name in the hub VNet."
+      }
+    },
+    "vpnGatewayName": {
+      "type": "string",
+      "defaultValue": "vng-p2s",
+      "metadata": {
+        "description": "Virtual network gateway resource name."
+      }
+    },
+    "vpnPublicIpName": {
+      "type": "string",
+      "defaultValue": "pip-vng-p2s",
+      "metadata": {
+        "description": "Gateway public IP resource name."
+      }
+    },
+    "vpnGatewaySku": {
+      "type": "string",
+      "defaultValue": "VpnGw1",
+      "allowedValues": [
+        "VpnGw1",
+        "VpnGw2",
+        "VpnGw3",
+        "VpnGw4",
+        "VpnGw5",
+        "VpnGw1AZ",
+        "VpnGw2AZ",
+        "VpnGw3AZ",
+        "VpnGw4AZ",
+        "VpnGw5AZ"
+      ],
+      "metadata": {
+        "description": "VPN gateway SKU. VpnGw1 is the smallest SKU that supports OpenVPN + Entra ID auth."
+      }
+    },
+    "vpnClientAddressPoolPrefix": {
+      "type": "string",
+      "defaultValue": "172.20.0.0/24",
+      "metadata": {
+        "description": "P2S address pool CIDR. Must not overlap with any VNet or on-prem address space."
+      }
+    },
+    "vpnClientCustomRoutePrefixes": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional route prefixes to advertise to P2S clients (for example hub/spoke VNet CIDRs)."
+      }
+    },
+    "aadTenantId": {
+      "type": "string",
+      "defaultValue": "[tenant().tenantId]",
+      "metadata": {
+        "description": "Microsoft Entra tenant ID used for VPN authentication."
+      }
+    },
+    "aadAudience": {
+      "type": "string",
+      "defaultValue": "41b23e61-6c1e-4545-b367-cd054e0ed4b4",
+      "metadata": {
+        "description": "Azure VPN first-party app ID for Azure public cloud."
+      }
+    },
+    "aadIssuer": {
+      "type": "string",
+      "metadata": {
+        "description": "AadIssuer URL. For Azure public cloud use: https://sts.windows.net/<tenant-id>/"
+      }
+    },
+    "hubDnsServerIp": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional inbound DNS IP to set on the existing hub VNet (safe patch update, not VNet recreation). Leave empty to skip."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {
+        "License": "MIT"
+      },
+      "metadata": {
+        "description": "Tags to apply to VPN resources."
+      }
+    }
+  },
+  "variables": {
+    "aadTenantUrl": "[format('{0}{1}', environment().authentication.loginEndpoint, parameters('aadTenantId'))]",
+    "gatewayCustomRoutes": "[if(empty(parameters('vpnClientCustomRoutePrefixes')), createObject(), createObject('customRoutes', createObject('addressPrefixes', parameters('vpnClientCustomRoutePrefixes'))))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2024-07-01",
+      "name": "[parameters('vpnPublicIpName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "apiVersion": "2024-07-01",
+      "name": "[parameters('vpnGatewayName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": "[shallowMerge(createArray(createObject('activeActive', false(), 'enableBgp', false(), 'gatewayType', 'Vpn', 'vpnType', 'RouteBased', 'vpnGatewayGeneration', 'Generation1', 'sku', createObject('name', parameters('vpnGatewaySku'), 'tier', parameters('vpnGatewaySku')), 'ipConfigurations', createArray(createObject('name', 'gw-ipconfig-01', 'properties', createObject('privateIPAllocationMethod', 'Dynamic', 'subnet', createObject('id', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubVnetName'), parameters('gatewaySubnetName'))), 'publicIPAddress', createObject('id', resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnPublicIpName'))))))), variables('gatewayCustomRoutes'), createObject('vpnClientConfiguration', createObject('vpnClientAddressPool', createObject('addressPrefixes', createArray(parameters('vpnClientAddressPoolPrefix'))), 'vpnAuthenticationTypes', createArray('AAD'), 'vpnClientProtocols', createArray('OpenVPN'), 'aadTenant', variables('aadTenantUrl'), 'aadAudience', parameters('aadAudience'), 'aadIssuer', parameters('aadIssuer')))))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnPublicIpName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "vpnGatewayId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('vpnGatewayName'))]"
+    },
+    "vpnGatewayName": {
+      "type": "string",
+      "value": "[parameters('vpnGatewayName')]"
+    },
+    "vpnGatewayPublicIp": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('vpnPublicIpName')), '2024-07-01').ipAddress]"
+    },
+    "aadTenant": {
+      "type": "string",
+      "value": "[variables('aadTenantUrl')]"
+    },
+    "profileGenerateCommand": {
+      "type": "string",
+      "value": "[format('az network vnet-gateway vpn-client generate --resource-group {0} --name {1} --processor-architecture Amd64', resourceGroup().name, parameters('vpnGatewayName'))]"
+    },
+    "hubVnetDnsUpdateCommand": {
+      "type": "string",
+      "value": "[if(empty(trim(parameters('hubDnsServerIp'))), '', format('az network vnet update --resource-group {0} --name {1} --dns-servers {2}', resourceGroup().name, parameters('hubVnetName'), parameters('hubDnsServerIp')))]"
+    }
+  }
+}
