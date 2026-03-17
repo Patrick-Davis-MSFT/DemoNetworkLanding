@@ -31,6 +31,12 @@ param appVnetAddress string
 param appNSGName string
 param appSnetDef array
 
+param aksSpokeVnetName string
+param aksSpokeVnetAddress string
+param aksSpokeNSGName string
+param aksSpokeSnetDef array
+param aksSpokeLocation string = 'eastus2'
+
 param gatewaySubnet object
 param bastionSubnet object
 
@@ -40,163 +46,62 @@ param enableKeyVault bool = true
 
 param resourceGroupName string
 param location string
+param createOnlyAksSpoke bool = true
 var tags = { License: 'MIT' }
 var resourceToken = toLower(substring(uniqueString(subscription().id, resourceGroupName, location), 0, 5))
+var hubExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', hubVnetName)
+var permServExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', permServVnetName)
+var appExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', appVnetName)
 
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   name: resourceGroupName
-  location: location
-  tags: tags
 }
 
-module nsgHub './modules/nsgModule.bicep' = {
-  name: 'nsgHub'
+module nsgAksSpoke './modules/nsgModule.bicep' = {
+  name: 'nsgAksSpoke'
   scope: rg
   params: {
-    nsgName: '${nsgHubName}-${resourceToken}'
-    location: location 
+    nsgName: aksSpokeNSGName
+    location: aksSpokeLocation
     tags: {}
   }
 }
 
-
-module nsgPermServices './modules/nsgModule.bicep' = {
-  name: 'nsgPermServices'
+module aksSpokeVnet './modules/vnet.bicep' = {
+  name: 'aksSpokeVnet'
   scope: rg
   params: {
-    nsgName: '${permServNSGName}-${resourceToken}'
-    location: location 
-    tags: {}
-  }
-}
-
-module nsgApp './modules/nsgModule.bicep' = {
-  name: 'appNSGName'
-  scope: rg
-  params: {
-    nsgName: '${appNSGName}-${resourceToken}'
-    location: location 
-    tags: {}
-  }
-}
-
-module hubVnet './modules/vnet.bicep' = {
-  name: 'hubVnet'
-  scope: rg
-  params: {
-    vnetName: '${hubVnetName}-${resourceToken}'
-    vnetAddress: hubVnetAddress
-    subnetDef: hubSubnetDef
-    nsgId: nsgHub.outputs.nsgId
-    location: location
+    vnetName: aksSpokeVnetName
+    vnetAddress: aksSpokeVnetAddress
+    subnetDef: aksSpokeSnetDef
+    nsgId: nsgAksSpoke.outputs.nsgId
+    location: aksSpokeLocation
     tags: tags
   }
 }
 
-module hubGatewaySubnet './modules/gatewaySubnet.bicep' = {
-  name: 'hubGatewaySubnet'
+module aksSpokePeerings './modules/vnetPeeringsAksSpoke.bicep' = {
+  name: 'aksSpokePeerings'
   scope: rg
   params: {
-    vnetName: hubVnet.outputs.vnetName
-    gatewaySubnet: gatewaySubnet
+    hubVnetId: hubExistingVnetId
+    hubVnetName: hubVnetName
+    permServVnetId: permServExistingVnetId
+    permServVnetName: permServVnetName
+    appVnetId: appExistingVnetId
+    appVnetName: appVnetName
+    aksSpokeVnetId: aksSpokeVnet.outputs.vnetId
+    aksSpokeVnetName: aksSpokeVnet.outputs.vnetName
   }
 }
 
-module hubBastionSubnet './modules/bastion.bicep' = {
-  name: 'hubBastionSubnet'
-  scope: rg
-  dependsOn: [
-    hubGatewaySubnet
-  ]
-  params: {
-    vnetName: hubVnet.outputs.vnetName
-    bastionSubnet: bastionSubnet
-  }
-}
-
-module permServVnet './modules/vnet.bicep' = {
-  name: 'permServVnet'
-  scope: rg
-  params: {
-    vnetName: '${permServVnetName}-${resourceToken}'
-    vnetAddress: permServVnetAddress
-    subnetDef: permServSnetDef
-    nsgId: nsgPermServices.outputs.nsgId
-    location: location
-    tags: tags
-  }
-}
-
-module appVnet './modules/vnet.bicep' = {
-  name: 'appVnet'
-  scope: rg
-  params: {
-    vnetName: '${appVnetName}-${resourceToken}'
-    vnetAddress: appVnetAddress
-    subnetDef: appSnetDef
-    nsgId: nsgApp.outputs.nsgId
-    location: location
-    tags: tags
-  }
-}
-
-module vnetPeerings './modules/vnetPeerings.bicep' = {
-  name: 'vnetPeerings'
-  scope: rg
-  params: {
-    hubVnetId: hubVnet.outputs.vnetId
-    hubVnetName: hubVnet.outputs.vnetName
-    permServVnetId: permServVnet.outputs.vnetId
-    permServVnetName: permServVnet.outputs.vnetName
-    appVnetId: appVnet.outputs.vnetId
-    appVnetName: appVnet.outputs.vnetName
-  }
-}
-
-module privateDnsZones './modules/privateDNS.bicep' = [for dnsZoneName in dnsNameList: {
-  name: 'privateDns-${replace(dnsZoneName, '.', '-')}'
+module aksSpokePrivateDnsLinks './modules/privateDnsLinkAksSpoke.bicep' = [for dnsZoneName in dnsNameList: {
+  name: 'aksSpokeDnsLink-${replace(dnsZoneName, '.', '-')}'
   scope: rg
   params: {
     dnsZoneName: dnsZoneName
-    hubVnetId: hubVnet.outputs.vnetId
-    permServVnetId: permServVnet.outputs.vnetId
-    appVnetId: appVnet.outputs.vnetId
-    resourceToken: resourceToken
+    aksSpokeVnetId: aksSpokeVnet.outputs.vnetId
+    aksSpokeLinkName: 'link-aks-${aksSpokeVnetName}'
     tags: tags
   }
 }]
-
-// =====================================================================
-// Key Vault with Private Endpoint Integration
-// =====================================================================
-
-module keyVault './modules/keyVault.bicep' = if (enableKeyVault) {
-  name: 'keyVault'
-  scope: rg
-  params: {
-    keyVaultName: '${keyVaultName}-${resourceToken}'
-    location: location
-    tenantId: tenant().tenantId
-    skuName: keyVaultSkuName
-    tags: tags
-  }
-  dependsOn: [
-    hubVnet
-  ]
-}
-
-module keyVaultPrivateEndpoint './modules/keyVaultPrivateEndpoint.bicep' = if (enableKeyVault) {
-  name: 'keyVaultPrivateEndpoint'
-  scope: rg
-  params: {
-    privateEndpointName: '${keyVaultName}-pe-${resourceToken}'
-    location: location
-    keyVaultId: keyVault.outputs.keyVaultId
-    subnetId: '${hubVnet.outputs.vnetId}/subnets/${hubSubnetDef[0].name}'
-    privateDnsZoneId: privateDnsZones[0].outputs.privateDnsZoneId
-    tags: tags
-  }
-  dependsOn: [
-    privateDnsZones
-  ]
-}

@@ -22,91 +22,6 @@ param aksSpokeVnetId string
 @description('The name of the AKS spoke virtual network')
 param aksSpokeVnetName string
 
-// Hub to PermServ peering
-resource hubToPermServPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${hubVnetName}/peer-to-${permServVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: true
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: permServVnetId
-    }
-  }
-}
-
-// PermServ to Hub peering
-resource permServToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${permServVnetName}/peer-to-${hubVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: false
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: hubVnetId
-    }
-  }
-}
-
-// Hub to App peering
-resource hubToAppPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${hubVnetName}/peer-to-${appVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: true
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: appVnetId
-    }
-  }
-}
-
-// App to Hub peering
-resource appToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${appVnetName}/peer-to-${hubVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: false
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: hubVnetId
-    }
-  }
-}
-
-// PermServ to App peering
-resource permServToAppPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${permServVnetName}/peer-to-${appVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: false
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: appVnetId
-    }
-  }
-}
-
-// App to PermServ peering
-resource appToPermServPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
-  name: '${appVnetName}/peer-to-${permServVnetName}'
-  properties: {
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-    allowGatewayTransit: false
-    useRemoteGateways: false
-    remoteVirtualNetwork: {
-      id: permServVnetId
-    }
-  }
-}
-
-// Hub to AKS spoke peering
 resource hubToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${hubVnetName}/peer-to-${aksSpokeVnetName}'
   properties: {
@@ -120,7 +35,6 @@ resource hubToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkP
   }
 }
 
-// AKS spoke to Hub peering
 resource aksSpokeToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${aksSpokeVnetName}/peer-to-${hubVnetName}'
   properties: {
@@ -134,7 +48,6 @@ resource aksSpokeToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkP
   }
 }
 
-// PermServ to AKS spoke peering
 resource permServToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${permServVnetName}/peer-to-${aksSpokeVnetName}'
   properties: {
@@ -148,7 +61,6 @@ resource permServToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNet
   }
 }
 
-// AKS spoke to PermServ peering
 resource aksSpokeToPermServPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${aksSpokeVnetName}/peer-to-${permServVnetName}'
   properties: {
@@ -162,7 +74,6 @@ resource aksSpokeToPermServPeering 'Microsoft.Network/virtualNetworks/virtualNet
   }
 }
 
-// App to AKS spoke peering
 resource appToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${appVnetName}/peer-to-${aksSpokeVnetName}'
   properties: {
@@ -176,7 +87,6 @@ resource appToAksSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkP
   }
 }
 
-// AKS spoke to App peering
 resource aksSpokeToAppPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-07-01' = {
   name: '${aksSpokeVnetName}/peer-to-${appVnetName}'
   properties: {
@@ -190,14 +100,8 @@ resource aksSpokeToAppPeering 'Microsoft.Network/virtualNetworks/virtualNetworkP
   }
 }
 
-@description('The resource IDs of all created peering connections')
+@description('The resource IDs of all created AKS spoke peering connections')
 output peeringIds array = [
-  hubToPermServPeering.id
-  permServToHubPeering.id
-  hubToAppPeering.id
-  appToHubPeering.id
-  permServToAppPeering.id
-  appToPermServPeering.id
   hubToAksSpokePeering.id
   aksSpokeToHubPeering.id
   permServToAksSpokePeering.id
