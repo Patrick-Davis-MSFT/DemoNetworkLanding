@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceGroupName": {
-      "value": "rg-demo-network-landing"
+      "value": "rg-perm-network"
     },
     "location": {
       "value": "eastus"
@@ -112,7 +112,7 @@
           "nsgName": "vnet-ai-spoke-snet-09-agent-nsg-eastus2",
           "delegations": [
             {
-              "name": "Microsoft.App/environments",
+              "name": "delegation",
               "properties": {
                 "serviceName": "Microsoft.App/environments"
               }
@@ -148,7 +148,7 @@
           "nsgName": "nsg-demo-apps",
           "delegations": [
             {
-              "name": "Microsoft.Web/serverFarms",
+              "name": "appServiceDelegation",
               "properties": {
                 "serviceName": "Microsoft.Web/serverFarms"
               }
