@@ -9,3 +9,4 @@ certs/
 *.key
 *.b64
 *.base64.txt
+/node_modules
