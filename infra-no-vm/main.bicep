@@ -52,20 +52,34 @@ var resourceToken = toLower(substring(uniqueString(subscription().id, resourceGr
 var hubExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', hubVnetName)
 var permServExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', permServVnetName)
 var appExistingVnetId = resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks', appVnetName)
+var hubSubnetNsgNames = [for subnet in hubSubnetDef: string(subnet.nsgName)]
+var permServSubnetNsgNames = [for subnet in permServSnetDef: string(subnet.nsgName)]
+var appSubnetNsgNames = [for subnet in appSnetDef: string(subnet.nsgName)]
+var aksSubnetNsgNames = [for subnet in aksSpokeSnetDef: string(subnet.nsgName)]
+var modeledNsgNames = union(
+  [
+    nsgHubName
+    permServNSGName
+    appNSGName
+    aksSpokeNSGName
+  ],
+  hubSubnetNsgNames,
+  permServSubnetNsgNames,
+  appSubnetNsgNames,
+  aksSubnetNsgNames
+)
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   name: resourceGroupName
 }
 
-module nsgAksSpoke './modules/nsgModule.bicep' = {
-  name: 'nsgAksSpoke'
+module nsgRules './modules/nsgModule.bicep' = [for nsgName in modeledNsgNames: {
+  name: 'nsgRules-${uniqueString(nsgName)}'
   scope: rg
   params: {
-    nsgName: aksSpokeNSGName
-    location: aksSpokeLocation
-    tags: {}
+    nsgName: nsgName
   }
-}
+}]
 
 module aksSpokeVnet './modules/vnet.bicep' = {
   name: 'aksSpokeVnet'
@@ -74,7 +88,7 @@ module aksSpokeVnet './modules/vnet.bicep' = {
     vnetName: aksSpokeVnetName
     vnetAddress: aksSpokeVnetAddress
     subnetDef: aksSpokeSnetDef
-    nsgId: nsgAksSpoke.outputs.nsgId
+    nsgId: resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/networkSecurityGroups', aksSpokeNSGName)
     location: aksSpokeLocation
     tags: tags
   }
