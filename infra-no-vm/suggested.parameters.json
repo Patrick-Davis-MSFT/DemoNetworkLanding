@@ -71,7 +71,7 @@
           "nsgName": "nsg-hub"
         },
         {
-          "name": "snet-04",
+          "name": "snet-04-appgw",
           "addressPrefix": "10.0.4.0/24",
           "nsgName": "nsg-hub"
         },

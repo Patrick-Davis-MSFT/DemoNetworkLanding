@@ -85,6 +85,22 @@ resource allowApimAtm443 'Microsoft.Network/networkSecurityGroups/securityRules@
   }
 }
 
+resource allowAppGatewayV2GatewayManager 'Microsoft.Network/networkSecurityGroups/securityRules@2024-07-01' = {
+  name: 'Allow-AppGwV2-GatewayManager-65200-65535'
+  parent: networkSecurityGroup
+  properties: {
+    description: 'Allow Application Gateway v2 control plane traffic from GatewayManager.'
+    protocol: 'Tcp'
+    sourcePortRange: '*'
+    destinationPortRange: '65200-65535'
+    sourceAddressPrefix: 'GatewayManager'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 105
+    direction: 'Inbound'
+  }
+}
+
 resource allowApimOutInternet80 'Microsoft.Network/networkSecurityGroups/securityRules@2024-07-01' = {
   name: 'Allow-APIM-Out-Internet-80'
   parent: networkSecurityGroup
