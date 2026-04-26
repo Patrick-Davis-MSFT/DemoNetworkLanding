@@ -120,3 +120,15 @@ module aksSpokePrivateDnsLinks './modules/privateDnsLinkAksSpoke.bicep' = [for d
     tags: tags
   }
 }]
+
+module keyVault './modules/keyVault.bicep' = if (enableKeyVault) {
+  name: 'keyVault'
+  scope: rg
+  params: {
+    keyVaultName: keyVaultName
+    location: location
+    tenantId: tenant().tenantId
+    skuName: keyVaultSkuName
+    tags: tags
+  }
+}

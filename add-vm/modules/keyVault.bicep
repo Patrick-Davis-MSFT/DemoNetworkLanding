@@ -1,14 +1,7 @@
 // =====================================================================
 // Azure Key Vault Module with RBAC Authorization
 // =====================================================================
-// This module creates a Key Vault with Azure RBAC-based access control
-// and configures it for private endpoint connectivity.
-// 
-// Key Features:
-// - Azure RBAC authorization (no legacy access policies)
-// - Private endpoint ready configuration
-// - Soft delete and purge protection enabled
-// - Premium SKU for certificate support
+// This module creates a Key Vault with Azure RBAC-based access control.
 // =====================================================================
 
 @description('Name of the Key Vault')
@@ -32,7 +25,6 @@ param enableSoftDelete bool = true
 @maxValue(90)
 param softDeleteRetentionInDays int = 7
 
-
 @description('Enable RBAC authorization for data plane access')
 param enableRbacAuthorization bool = true
 
@@ -43,36 +35,23 @@ param publicNetworkAccess string = 'disabled'
 @description('Tags to apply to the Key Vault')
 param tags object = {}
 
-// =====================================================================
-// Key Vault Resource
-// =====================================================================
-
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   tags: tags
   properties: {
-    // Core Configuration
     tenantId: tenantId
     sku: {
       family: 'A'
       name: skuName
     }
-    
-    // Access Control - Using Azure RBAC for data plane access
     enableRbacAuthorization: enableRbacAuthorization
-    accessPolicies: [] // Empty when using RBAC
-    
-    // Data Protection
+    accessPolicies: []
     enableSoftDelete: enableSoftDelete
     softDeleteRetentionInDays: softDeleteRetentionInDays
-    
-    // Azure Service Integration
     enabledForDeployment: false
     enabledForDiskEncryption: false
     enabledForTemplateDeployment: false
-    
-    // Network Access Control
     publicNetworkAccess: publicNetworkAccess
     networkAcls: {
       bypass: 'AzureServices'
@@ -83,23 +62,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-// =====================================================================
-// Outputs
-// =====================================================================
-
 @description('Resource ID of the Key Vault')
 output keyVaultId string = keyVault.id
 
 @description('Name of the Key Vault')
 output keyVaultName string = keyVault.name
-
-@description('URI of the Key Vault for performing operations')
-output keyVaultUri string = keyVault.properties.vaultUri
-
-@description('Key Vault resource object for use in other modules')
-output keyVaultResource object = {
-  id: keyVault.id
-  name: keyVault.name
-  uri: keyVault.properties.vaultUri
-  location: keyVault.location
-}

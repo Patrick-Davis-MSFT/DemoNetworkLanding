@@ -1,0 +1,447 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "4657664671067010279"
+    }
+  },
+  "parameters": {
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing resource group that contains the network"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region used for Bastion and VM resources"
+      }
+    },
+    "hubVnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing hub VNet name created by infra-no-vm deployment"
+      }
+    },
+    "hubSubnetDef": {
+      "type": "array",
+      "metadata": {
+        "description": "Hub subnet definitions from infra-no-vm parameters. The first subnet is used for VM placement."
+      }
+    },
+    "bastionSubnet": {
+      "type": "object",
+      "metadata": {
+        "description": "Bastion subnet definition object from infra-no-vm parameters"
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing Key Vault name where VM credentials are stored"
+      }
+    },
+    "vmAdminUsername": {
+      "type": "string",
+      "defaultValue": "openseasmeuser",
+      "metadata": {
+        "description": "VM Administrator username"
+      }
+    },
+    "vmAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VM Administrator password"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS1_v2",
+      "metadata": {
+        "description": "VM size/SKU"
+      }
+    },
+    "windowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2022-datacenter-g2",
+      "allowedValues": [
+        "2019-datacenter-gensecond",
+        "2022-datacenter-g2",
+        "2022-datacenter-azure-edition"
+      ],
+      "metadata": {
+        "description": "Windows OS version for the VM"
+      }
+    }
+  },
+  "variables": {
+    "tags": {
+      "License": "MIT"
+    },
+    "resourceToken": "[toLower(substring(uniqueString(subscription().id, parameters('resourceGroupName'), parameters('location')), 0, 5))]",
+    "vmSubnetName": "[string(parameters('hubSubnetDef')[0].name)]",
+    "vmSubnetId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('hubVnetName'), variables('vmSubnetName'))]",
+    "keyVaultId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "bastionAndVm",
+      "resourceGroup": "[parameters('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vnetName": {
+            "value": "[parameters('hubVnetName')]"
+          },
+          "bastionSubnet": {
+            "value": "[parameters('bastionSubnet')]"
+          },
+          "vmSubnetId": {
+            "value": "[variables('vmSubnetId')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourceToken": {
+            "value": "[variables('resourceToken')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "vmAdminUsername": {
+            "value": "[parameters('vmAdminUsername')]"
+          },
+          "vmAdminPassword": {
+            "value": "[parameters('vmAdminPassword')]"
+          },
+          "vmSize": {
+            "value": "[parameters('vmSize')]"
+          },
+          "windowsOSVersion": {
+            "value": "[parameters('windowsOSVersion')]"
+          },
+          "keyVaultId": {
+            "value": "[variables('keyVaultId')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "7524614340167832401"
+            }
+          },
+          "parameters": {
+            "vnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the virtual network where the bastion subnet will be created"
+              }
+            },
+            "bastionSubnet": {
+              "type": "object",
+              "metadata": {
+                "description": "The bastion subnet definition"
+              }
+            },
+            "vmSubnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "The VM subnet ID where the virtual machine will be deployed"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Azure region for resource deployment"
+              }
+            },
+            "resourceToken": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource token for unique naming"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags to apply to resources"
+              }
+            },
+            "vmAdminUsername": {
+              "type": "string",
+              "defaultValue": "openseasmeuser",
+              "metadata": {
+                "description": "VM Administrator username"
+              }
+            },
+            "vmAdminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "VM Administrator password"
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_DS2_v3",
+              "metadata": {
+                "description": "VM size/SKU"
+              }
+            },
+            "keyVaultId": {
+              "type": "string",
+              "metadata": {
+                "description": "Key Vault resource ID for storing secrets"
+              }
+            },
+            "windowsOSVersion": {
+              "type": "string",
+              "defaultValue": "2022-datacenter-g2",
+              "allowedValues": [
+                "2019-datacenter-gensecond",
+                "2022-datacenter-g2",
+                "2022-datacenter-azure-edition"
+              ],
+              "metadata": {
+                "description": "Windows OS version for the VM"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2024-07-01",
+              "name": "[format('{0}/{1}', parameters('vnetName'), parameters('bastionSubnet').name)]",
+              "properties": {
+                "addressPrefix": "[parameters('bastionSubnet').addressPrefix]"
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2024-07-01",
+              "name": "[format('pip-bastion-{0}', parameters('resourceToken'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+              }
+            },
+            {
+              "type": "Microsoft.Network/bastionHosts",
+              "apiVersion": "2024-07-01",
+              "name": "[format('bastion-{0}', parameters('resourceToken'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "IpConf",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('bastionSubnet').name)]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('pip-bastion-{0}', parameters('resourceToken')))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('pip-bastion-{0}', parameters('resourceToken')))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('bastionSubnet').name)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2024-07-01",
+              "name": "[format('nic-vm-{0}', parameters('resourceToken'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('vmSubnetId')]"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2024-07-01",
+              "name": "[format('vm-{0}', parameters('resourceToken'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                  "computerName": "[format('vm-{0}', parameters('resourceToken'))]",
+                  "adminUsername": "[parameters('vmAdminUsername')]",
+                  "adminPassword": "[parameters('vmAdminPassword')]",
+                  "windowsConfiguration": {
+                    "enableAutomaticUpdates": true,
+                    "provisionVMAgent": true,
+                    "patchSettings": {
+                      "patchMode": "AutomaticByPlatform",
+                      "automaticByPlatformSettings": {
+                        "rebootSetting": "IfRequired"
+                      }
+                    }
+                  }
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "[parameters('windowsOSVersion')]",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "name": "[format('osdisk-vm-{0}', parameters('resourceToken'))]",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "Premium_LRS"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('nic-vm-{0}', parameters('resourceToken')))]"
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('nic-vm-{0}', parameters('resourceToken')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2023-07-01",
+              "name": "[format('{0}/{1}', last(split(parameters('keyVaultId'), '/')), 'vm-admin-password')]",
+              "properties": {
+                "value": "[parameters('vmAdminPassword')]",
+                "attributes": {
+                  "enabled": true
+                }
+              }
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2023-07-01",
+              "name": "[format('{0}/{1}', last(split(parameters('keyVaultId'), '/')), 'vm-admin-username')]",
+              "properties": {
+                "value": "[parameters('vmAdminUsername')]",
+                "attributes": {
+                  "enabled": true
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "bastionSubnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the created bastion subnet"
+              },
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('bastionSubnet').name)]"
+            },
+            "bastionSubnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the created bastion subnet"
+              },
+              "value": "[parameters('bastionSubnet').name]"
+            },
+            "bastionHostId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Azure Bastion Host"
+              },
+              "value": "[resourceId('Microsoft.Network/bastionHosts', format('bastion-{0}', parameters('resourceToken')))]"
+            },
+            "bastionHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Azure Bastion Host"
+              },
+              "value": "[format('bastion-{0}', parameters('resourceToken'))]"
+            },
+            "vmId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Virtual Machine"
+              },
+              "value": "[resourceId('Microsoft.Compute/virtualMachines', format('vm-{0}', parameters('resourceToken')))]"
+            },
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Virtual Machine"
+              },
+              "value": "[format('vm-{0}', parameters('resourceToken'))]"
+            },
+            "vmComputerName": {
+              "type": "string",
+              "metadata": {
+                "description": "The computer name of the Virtual Machine"
+              },
+              "value": "[reference(resourceId('Microsoft.Compute/virtualMachines', format('vm-{0}', parameters('resourceToken'))), '2024-07-01').osProfile.computerName]"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "bastionHostId": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'bastionAndVm'), '2025-04-01').outputs.bastionHostId.value]"
+    },
+    "bastionHostName": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'bastionAndVm'), '2025-04-01').outputs.bastionHostName.value]"
+    },
+    "vmId": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'bastionAndVm'), '2025-04-01').outputs.vmId.value]"
+    },
+    "vmName": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'bastionAndVm'), '2025-04-01').outputs.vmName.value]"
+    }
+  }
+}

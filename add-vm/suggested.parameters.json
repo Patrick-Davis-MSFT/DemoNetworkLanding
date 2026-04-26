@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceGroupName": {
+      "value": "rg-perm-network"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "hubVnetName": {
+      "value": "vnet-hub-01"
+    },
+    "hubSubnetDef": {
+      "value": [
+        {
+          "name": "snet-01",
+          "addressPrefix": "10.0.1.0/24",
+          "nsgName": "nsg-hub"
+        }
+      ]
+    },
+    "bastionSubnet": {
+      "value": {
+        "name": "AzureBastionSubnet",
+        "addressPrefix": "10.0.7.0/26"
+      }
+    },
+    "keyVaultName": {
+      "value": "kv-netw"
+    },
+    "vmAdminUsername": {
+      "value": "openseasmeuser"
+    },
+    "vmSize": {
+      "value": "Standard_B2s"
+    },
+    "windowsOSVersion": {
+      "value": "2022-datacenter-g2"
+    }
+  }
+}

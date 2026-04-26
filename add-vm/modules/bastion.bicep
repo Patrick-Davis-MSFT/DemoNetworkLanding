@@ -1,7 +1,7 @@
 // =====================================================================
 // Azure Bastion and Virtual Machine Module
 // =====================================================================
-// This module creates Azure Bastion for secure VM access and deploys 
+// This module creates Azure Bastion for secure VM access and deploys
 // a Windows Virtual Machine with credentials stored in Key Vault.
 // =====================================================================
 
@@ -55,8 +55,8 @@ resource bastionSubnetResource 'Microsoft.Network/virtualNetworks/subnets@2024-0
   parent: existingVnet
   properties: {
     addressPrefix: bastionSubnet.addressPrefix
-    // Bastion subnet typically doesn't need NSG
-    // Azure Bastion manages its own security rules
+    // Bastion subnet typically does not need NSG.
+    // Azure Bastion manages its own security rules.
   }
 }
 
@@ -200,7 +200,6 @@ resource vmUsernameSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   }
 }
 
-// Outputs
 @description('The resource ID of the created bastion subnet')
 output bastionSubnetId string = bastionSubnetResource.id
 
